@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - MongoDB API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 100px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .response-box {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .endpoint-url {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .method-get {
+            background: #28a745;
+            color: white;
+        }
+
+        .method-post {
+            background: #007bff;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Panel de Control MongoDB API</h1>
+
+        <!-- Endpoint raíz -->
+        <div class="card">
+            <h2><span class="method-badge method-get">GET</span>Endpoint Raíz</h2>
+            <div class="endpoint-url">GET http://localhost:3000/</div>
+            <button onclick="testRoot()">Probar Endpoint</button>
+            <div class="loading" id="loading-root"><div class="spinner"></div></div>
+            <div class="response-box" id="response-root">Presiona el botón para probar...</div>
+        </div>
+
+        <!-- Serv001 - GET con parámetros -->
+        <div class="card">
+            <h2><span class="method-badge method-get">GET</span>Servicio 001 - Parámetros en URL</h2>
+            <div class="endpoint-url">GET http://localhost:3000/serv001?id={id}&token={token}&geo={geo}</div>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>ID:</label>
+                    <input type="text" id="serv001-id" value="usuario123" placeholder="ID de usuario">
+                </div>
+                <div class="form-group">
+                    <label>Token:</label>
+                    <input type="text" id="serv001-token" value="token456xyz" placeholder="Token de autenticación">
+                </div>
+                <div class="form-group">
+                    <label>Geo:</label>
+                    <input type="text" id="serv001-geo" value="19.4326,-99.1332" placeholder="Coordenadas">
+                </div>
+            </div>
+            <button onclick="testServ001()">Enviar Petición</button>
+            <div class="loading" id="loading-serv001"><div class="spinner"></div></div>
+            <div class="response-box" id="response-serv001">Presiona el botón para enviar...</div>
+        </div>
+
+        <!-- Serv0010 - GET con parámetros (variante) -->
+        <div class="card">
+            <h2><span class="method-badge method-get">GET</span>Servicio 0010 - Parámetros en URL (Variante)</h2>
+            <div class="endpoint-url">GET http://localhost:3000/serv0010?id={id}&token={token}&geo={geo}</div>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>ID:</label>
+                    <input type="text" id="serv0010-id" value="usuario456" placeholder="ID de usuario">
+                </div>
+                <div class="form-group">
+                    <label>Token:</label>
+                    <input type="text" id="serv0010-token" value="tokenABC789" placeholder="Token de autenticación">
+                </div>
+                <div class="form-group">
+                    <label>Geo:</label>
+                    <input type="text" id="serv0010-geo" value="20.123,-100.456" placeholder="Coordenadas">
+                </div>
+            </div>
+            <button onclick="testServ0010()">Enviar Petición</button>
+            <div class="loading" id="loading-serv0010"><div class="spinner"></div></div>
+            <div class="response-box" id="response-serv0010">Presiona el botón para enviar...</div>
+        </div>
+
+        <!-- Serv002 - POST con body JSON -->
+        <div class="card">
+            <h2><span class="method-badge method-post">POST</span>Servicio 002 - Body JSON</h2>
+            <div class="endpoint-url">POST http://localhost:3000/serv002</div>
+            <div class="form-group">
+                <label>JSON Body:</label>
+                <textarea id="serv002-body">{
+  "id": "usuario789",
+  "token": "tokenSeguro123",
+  "geo": "21.156,-86.846"
+}</textarea>
+            </div>
+            <button onclick="testServ002()">Enviar POST</button>
+            <div class="loading" id="loading-serv002"><div class="spinner"></div></div>
+            <div class="response-box" id="response-serv002">Presiona el botón para enviar...</div>
+        </div>
+
+        <!-- Serv003 - POST con parámetro en URL -->
+        <div class="card">
+            <h2><span class="method-badge method-post">POST</span>Servicio 003 - Parámetro en URL</h2>
+            <div class="endpoint-url">POST http://localhost:3000/serv003/{info}</div>
+            <div class="form-group">
+                <label>Información:</label>
+                <input type="text" id="serv003-info" value="miInformacionImportante123" placeholder="Información a enviar">
+            </div>
+            <button onclick="testServ003()">Enviar POST</button>
+            <div class="loading" id="loading-serv003"><div class="spinner"></div></div>
+            <div class="response-box" id="response-serv003">Presiona el botón para enviar...</div>
+        </div>
+
+        <!-- MongoDB - Insertar receta -->
+        <div class="card">
+            <h2><span class="method-badge method-post">POST</span>MongoDB - Insertar Receta</h2>
+            <div class="endpoint-url">POST http://localhost:3000/recipe/insert</div>
+            <p style="color: #666; margin-bottom: 15px;">Este endpoint inserta una receta predefinida en MongoDB.</p>
+            <button onclick="testInsertRecipe()">Insertar Receta</button>
+            <div class="loading" id="loading-recipe"><div class="spinner"></div></div>
+            <div class="response-box" id="response-recipe">Presiona el botón para insertar una receta en MongoDB...</div>
+        </div>
+
+        <!-- MongoDB - Consultar todas las recetas (endpoint adicional) -->
+        <div class="card">
+            <h2><span class="method-badge method-get">GET</span>MongoDB - Consultar Todas las Recetas</h2>
+            <div class="endpoint-url">GET http://localhost:3000/recipe/all</div>
+            <p style="color: #666; margin-bottom: 15px;">Nota: Este endpoint necesita ser agregado a tu código del servidor.</p>
+            <button onclick="testGetAllRecipes()">Obtener Todas las Recetas</button>
+            <div class="loading" id="loading-all-recipes"><div class="spinner"></div></div>
+            <div class="response-box" id="response-all-recipes">Presiona el botón para consultar todas las recetas...</div>
+        </div>
+
+        <!-- MongoDB - Buscar receta por ID -->
+        <div class="card">
+            <h2><span class="method-badge method-get">GET</span>MongoDB - Buscar Receta por ID</h2>
+            <div class="endpoint-url">GET http://localhost:3000/recipe/{id}</div>
+            <div class="form-group">
+                <label>Recipe ID (ObjectId de MongoDB):</label>
+                <input type="text" id="recipe-id" placeholder="Ej: 507f1f77bcf86cd799439011">
+            </div>
+            <button onclick="testGetRecipeById()">Buscar Receta</button>
+            <div class="loading" id="loading-recipe-id"><div class="spinner"></div></div>
+            <div class="response-box" id="response-recipe-id">Ingresa un ID válido de MongoDB y presiona el botón...</div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:3000';
+
+        function showLoading(id) {
+            document.getElementById(`loading-${id}`).classList.add('active');
+        }
+
+        function hideLoading(id) {
+            document.getElementById(`loading-${id}`).classList.remove('active');
+        }
+
+        function displayResponse(id, data, isError = false) {
+            const responseBox = document.getElementById(`response-${id}`);
+            const className = isError ? 'error' : 'success';
+            responseBox.innerHTML = `<span class="${className}">${isError ? '❌ Error:' : '✅ Respuesta exitosa:'}</span>\n\n${JSON.stringify(data, null, 2)}`;
+        }
+
+        async function testRoot() {
+            showLoading('root');
+            try {
+                const response = await fetch(`${BASE_URL}/`);
+                const data = await response.json();
+                displayResponse('root', data);
+            } catch (error) {
+                displayResponse('root', { error: error.message }, true);
+            } finally {
+                hideLoading('root');
+            }
+        }
+
+        async function testServ001() {
+            showLoading('serv001');
+            const id = document.getElementById('serv001-id').value;
+            const token = document.getElementById('serv001-token').value;
+            const geo = document.getElementById('serv001-geo').value;
+
+            try {
+                const response = await fetch(`${BASE_URL}/serv001?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}&geo=${encodeURIComponent(geo)}`);
+                const data = await response.json();
+                displayResponse('serv001', data);
+            } catch (error) {
+                displayResponse('serv001', { error: error.message }, true);
+            } finally {
+                hideLoading('serv001');
+            }
+        }
+
+        async function testServ0010() {
+            showLoading('serv0010');
+            const id = document.getElementById('serv0010-id').value;
+            const token = document.getElementById('serv0010-token').value;
+            const geo = document.getElementById('serv0010-geo').value;
+
+            try {
+                const response = await fetch(`${BASE_URL}/serv0010?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}&geo=${encodeURIComponent(geo)}`);
+                const data = await response.json();
+                displayResponse('serv0010', data);
+            } catch (error) {
+                displayResponse('serv0010', { error: error.message }, true);
+            } finally {
+                hideLoading('serv0010');
+            }
+        }
+
+        async function testServ002() {
+            showLoading('serv002');
+            const body = document.getElementById('serv002-body').value;
+
+            try {
+                const response = await fetch(`${BASE_URL}/serv002`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: body
+                });
+                const data = await response.json();
+                displayResponse('serv002', data);
+            } catch (error) {
+                displayResponse('serv002', { error: error.message }, true);
+            } finally {
+                hideLoading('serv002');
+            }
+        }
+
+        async function testServ003() {
+            showLoading('serv003');
+            const info = document.getElementById('serv003-info').value;
+
+            try {
+                const response = await fetch(`${BASE_URL}/serv003/${encodeURIComponent(info)}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                displayResponse('serv003', data);
+            } catch (error) {
+                displayResponse('serv003', { error: error.message }, true);
+            } finally {
+                hideLoading('serv003');
+            }
+        }
+
+        async function testInsertRecipe() {
+            showLoading('recipe');
+            try {
+                const response = await fetch(`${BASE_URL}/recipe/insert`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                displayResponse('recipe', data);
+            } catch (error) {
+                displayResponse('recipe', { error: error.message }, true);
+            } finally {
+                hideLoading('recipe');
+            }
+        }
+
+        async function testGetAllRecipes() {
+            showLoading('all-recipes');
+            try {
+                const response = await fetch(`${BASE_URL}/recipe/all`);
+                const data = await response.json();
+                displayResponse('all-recipes', data);
+            } catch (error) {
+                displayResponse('all-recipes', { error: error.message }, true);
+            } finally {
+                hideLoading('all-recipes');
+            }
+        }
+
+        async function testGetRecipeById() {
+            showLoading('recipe-id');
+            const id = document.getElementById('recipe-id').value;
+
+            if (!id) {
+                displayResponse('recipe-id', { error: 'Por favor ingresa un ID válido' }, true);
+                hideLoading('recipe-id');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/recipe/${encodeURIComponent(id)}`);
+                const data = await response.json();
+                displayResponse('recipe-id', data);
+            } catch (error) {
+                displayResponse('recipe-id', { error: error.message }, true);
+            } finally {
+                hideLoading('recipe-id');
+            }
+        }
+    </script>
+</body>
+</html>
